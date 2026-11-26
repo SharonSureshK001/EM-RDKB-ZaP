@@ -22,6 +22,7 @@ from rdkbmeshzap.common_utils.backhaul_utils import (
     EAPOL_CAPTURE_FILTER,
     verify_eapol_handshake,
     wait_for_reconnect,
+    verify_bssid_owned_by_controller
 )
 
 # PUBLIC_INTERFACE
@@ -54,7 +55,8 @@ def test_em_backhaul_reassociation(initialize):
         pre_bssid, pre_ssid = initialize.get_backhaul_link_details(agent, backhaul_iface)
         assert pre_bssid, f"{agent}: Backhaul is not connected on {backhaul_iface}."
         assert pre_ssid == expected_ssid, f"{agent}: Connected SSID {pre_ssid!r}, expected {expected_ssid!r}"
-        report_logger.print_success(f"PASS: Connected to BSSID {pre_bssid}, SSID {pre_ssid}")
+        verify_bssid_owned_by_controller(initialize, agent, pre_bssid)
+        report_logger.print_success(f"PASS: Connected to Controller BSSID {pre_bssid}, SSID {pre_ssid}")
 
         report_logger.print_step("STEP 2: Start EAPOL packet capture")
         initialize.start_frame_capture(agent, backhaul_iface, EAPOL_CAPTURE_FILTER, capture_name)
@@ -105,13 +107,15 @@ def test_em_backhaul_reassociation(initialize):
         capture_running = False
         frame_count = verify_eapol_handshake(local_pcap)
         report_logger.print_success(f"PASS: Captured {frame_count} EAPOL-Key frame(s)")
+        
         report_logger.print_step("STEP 6: Verify connectivity restoration")
         report_logger.print_info(f"Pre-reassociation : BSSID {pre_bssid}, SSID {pre_ssid}")
         report_logger.print_info(f"Post-reassociation: BSSID {post_bssid}, SSID {post_ssid}")
         assert post_ssid == pre_ssid == expected_ssid, f"{agent}: Backhaul SSID changed after reassociation (pre {pre_ssid!r}, post {post_ssid!r}, expected {expected_ssid!r})"
+        verify_bssid_owned_by_controller(initialize, agent, post_bssid)
         if post_bssid != pre_bssid:
-            report_logger.print_info(f"INFO: {agent} reassociated to a different BSSID of the expected backhaul SSID")
-        report_logger.print_success(f"PASS: {agent} is associated with the expected backhaul BSS (SSID {post_ssid})")
+            report_logger.print_info(f"INFO: {agent} moved between Controller BSSs ({pre_bssid} -> {post_bssid})")
+        report_logger.print_success(f"PASS: {agent} is associated with a Controller BSS (SSID {post_ssid})")
         replies = []
         ping_output = ""
         for attempt in range(1, 4):

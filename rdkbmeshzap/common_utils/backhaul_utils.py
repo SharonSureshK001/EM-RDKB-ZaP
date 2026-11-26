@@ -23,6 +23,7 @@ from scapy.all import Ether
 from scapy.all import rdpcap
 
 from rdkbmeshzap.common_utils import report_logger
+from rdkbmeshzap.common_utils import device_utils
 
 BACKHAUL_AKM_PARAMETER = "Device.WiFi.DataElements.Network.Device.1.Radio.1.BSS.1.BackhaulAKMsAllowed"
 DOWN_WAIT_SECONDS = 10
@@ -114,3 +115,40 @@ def verify_eapol_handshake(pcap_path):
     report_logger.print_info(f"Captured EAPOL-Key frames in {pcap_path}: {frame_count}")
     assert frame_count >= 2, f"Expected a complete EAPOL authentication exchange after reassociation. Found {frame_count} frame(s)."
     return frame_count
+
+def get_bssid_owner(initialize, bssid, devices):
+    """
+    Syntax: get_bssid_owner(initialize, bssid, devices)
+    Description: Identify which device owns a BSSID by scanning all wireless interfaces (including MLD link addresses).
+    Parameters: initialize - Testbed interface; bssid - BSSID to resolve; devices - Candidate owner devices.
+    Return Value: The owning device name, or None when no candidate owns the BSSID.
+    Example: get_bssid_owner(initialize, "02:02:21:52:a6:48", ["controller", "extender1"])
+    """
+    for device in devices:
+        try:
+            interfaces = initialize.get_wireless_interfaces_list(device)
+        except Exception:
+            continue
+        for interface in interfaces:
+            try:
+                output = initialize.get_iw_dev_interface_info(device, interface)
+            except Exception:
+                continue
+            if re.search(rf"\baddr\s+{re.escape(bssid)}\b", str(output), re.IGNORECASE):
+                return device
+    return None
+
+def verify_bssid_owned_by_controller(initialize, agent, bssid, controller="controller"):
+    """
+    Syntax: verify_bssid_owned_by_controller(initialize, agent, bssid, controller="controller")
+    Description: Verify a connected BSSID belongs to the Controller, not to another Agent (multi-hop).
+    Parameters: initialize - Testbed interface; agent - Agent device name; bssid - Connected BSSID;
+                controller - Controller device name.
+    Return Value: None; asserts when the BSSID is not a Controller BSS.
+    Example: verify_bssid_owned_by_controller(initialize, "extender1", "02:02:21:52:a6:48")
+    """
+    if get_bssid_owner(initialize, bssid, [controller]):
+        return
+    other_agents = [device for device in device_utils.get_enabled_extenders(initialize) if device != agent]
+    owner = get_bssid_owner(initialize, bssid, other_agents)
+    assert False, f"{agent}: BSSID {bssid} does not belong to {controller} (owner: {owner or 'unknown'})"
