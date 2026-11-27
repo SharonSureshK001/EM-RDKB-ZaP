@@ -15,7 +15,6 @@
 import time
 from rdkbmeshzap.common_utils import device_utils, report_logger
 from rdkbmeshzap.common_utils.backhaul_utils import (
-    BACKHAUL_AKM_PARAMETER,
     verify_backhaul_association,
     verify_controller_connectivity,
 )
@@ -32,7 +31,7 @@ def test_em_backhaul_akm_security_configuration(initialize):
         controller_ip = initialize.read_from_database(controller, "bridge_ip")
 
         report_logger.print_step("STEP 1: Verify AKM configuration")
-        value = initialize.get_backhaul_akm(controller, BACKHAUL_AKM_PARAMETER)
+        value = initialize.get_backhaul_akm(controller)
         report_logger.print_success(f"PASS: Configured AKM: {value}")
 
         report_logger.print_step("STEP 2: Verify wireless backhaul association")

@@ -15,7 +15,6 @@
 import re
 import time
 from contextlib import suppress
-
 from rdkbmeshzap.common_utils import device_utils, report_logger
 from rdkbmeshzap.common_utils.backhaul_utils import (
     DOWN_WAIT_SECONDS,
@@ -107,7 +106,7 @@ def test_em_backhaul_reassociation(initialize):
         capture_running = False
         frame_count = verify_eapol_handshake(local_pcap)
         report_logger.print_success(f"PASS: Captured {frame_count} EAPOL-Key frame(s)")
-        
+
         report_logger.print_step("STEP 6: Verify connectivity restoration")
         report_logger.print_info(f"Pre-reassociation : BSSID {pre_bssid}, SSID {pre_ssid}")
         report_logger.print_info(f"Post-reassociation: BSSID {post_bssid}, SSID {post_ssid}")

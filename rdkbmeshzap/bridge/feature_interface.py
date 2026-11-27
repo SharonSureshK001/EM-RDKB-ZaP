@@ -115,38 +115,6 @@ class FeatureInterface(FeatureInterfaceModules):
         iface_obj = self.get_feature_interface_module_object(method)
         return iface_obj.get_iw_link_details(device, interface, value)
     
-    # def get_backhaul_link_details(self, device: str, interface: str = 'wifi1.3', method: str = 'cli') -> tuple:
-    #     """
-    #     Get (bssid, ssid) of the active backhaul link; None for a field that is not reported.
-    #     """
-    #     zi_logger.print_context()
-    #     bssids = self.get_iw_link_details(device, interface, 'bssid', method)
-    #     ssids = self.get_iw_link_details(device, interface, 'ssid', method)
-    #     return (
-    #         bssids[0].lower() if bssids else None,
-    #         ssids[0].strip() if ssids else None,
-    #     )
-
-    # def get_backhaul_akm(self, device: str, parameter: str) -> str:
-    #     """
-    #     Get the configured BackhaulAKMsAllowed value through rbuscli.
-    #     """
-    #     zi_logger.print_context()
-    #     output = self.execute_command(device, f"rbuscli get {parameter}")
-    #     match = re.search(
-    #         rf"^\s*Name\s*:\s*{re.escape(parameter)}[ \t]*\r?\n"
-    #         rf"\s*Type\s*:[^\r\n]+\r?\n"
-    #         rf"\s*Value\s*:\s*([^\r\n]*)",
-    #         output,
-    #         re.MULTILINE,
-    #     )
-    #     if not match:
-    #         raise RuntimeError(f"{device}: AKM property/value was not returned:\n{output}")
-    #     value = match.group(1).strip().strip("\"'")
-    #     if not value:
-    #         raise RuntimeError(f"{device}: Configured AKM value is empty:\n{output}")
-    #     return value   
-
     def get_backhaul_link_details(self, device: str, interface: str = 'wifi1.3', method: str = 'cli') -> tuple:
         """
         Get (bssid, ssid) of the active backhaul link; None for a field that is not reported.
@@ -155,13 +123,13 @@ class FeatureInterface(FeatureInterfaceModules):
         iface_obj = self.get_feature_interface_module_object(method)
         return iface_obj.get_backhaul_link_details(device, interface)
 
-    def get_backhaul_akm(self, device: str, parameter: str, method: str = 'cli') -> str:
+    def get_backhaul_akm(self, device: str, method: str = 'de') -> str:
         """
         Get the configured BackhaulAKMsAllowed value through rbuscli.
         """
         zi_logger.print_context()
         iface_obj = self.get_feature_interface_module_object(method)
-        return iface_obj.get_backhaul_akm(device, parameter)
+        return iface_obj.get_backhaul_akm(device)
     
     def get_iw_station_details(self, device: str, interface: str, value: str, method: str = 'cli') -> list:
         """

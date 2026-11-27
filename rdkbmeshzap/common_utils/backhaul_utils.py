@@ -18,14 +18,11 @@
 import re
 import shlex
 import time
-
 from scapy.all import Ether
 from scapy.all import rdpcap
-
 from rdkbmeshzap.common_utils import report_logger
 from rdkbmeshzap.common_utils import device_utils
 
-BACKHAUL_AKM_PARAMETER = "Device.WiFi.DataElements.Network.Device.1.Radio.1.BSS.1.BackhaulAKMsAllowed"
 DOWN_WAIT_SECONDS = 10
 RECONNECT_TIMEOUT_SECONDS = 120
 RECONNECT_POLL_SECONDS = 5
